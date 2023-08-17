@@ -32,7 +32,9 @@ export default function Stock() {
         .data(data)
         .join("text")
         .text((d: any) => d.stock)
-        .attr("y", (d: any) => y(d.stock)! + 16);
+        .attr("x", 60)
+        .attr("y", (d: any) => y(d.stock)! + 16)
+        .attr("text-anchor", "end");
 
       svg
         .selectAll()
