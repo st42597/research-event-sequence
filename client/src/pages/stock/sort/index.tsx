@@ -1,4 +1,4 @@
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import * as d3 from "d3";
 
 const desendingSort = (data: any) => {
@@ -15,6 +15,7 @@ const desendingSort = (data: any) => {
 };
 
 export default function Stock() {
+  const [pointer, setPointer] = useState("2022-08-19");
   useEffect(() => {
     d3.json("/stock.json").then((data: any) => {
       data = desendingSort(data);
@@ -33,15 +34,42 @@ export default function Stock() {
         .range([0, height])
         .domain(stockList)
         .padding(0.01);
+
       const svg = d3
         .select("#stock-container")
         .append("svg")
         .attr("width", width)
         .attr("height", height);
 
-      svg
+      const header = svg.append("g").attr("transform", "translate(70, 0)");
+      const body = svg.append("g").attr("transform", "translate(0, 20)");
+
+      header
+        .selectAll("circle")
+        .data(data[0].data)
+        .join("circle")
+        .attr("cx", (d: any) => x(d.date)! + 10)
+        .attr("cy", 10)
+        .attr("r", 5)
+        .attr("fill", (d: any) => {
+          return d.date == pointer ? "red" : "steelblue";
+        })
+        .style("cursor", "pointer");
+
+      header
+        .selectAll("circle")
+        .on("mouseover", (e, d) => {
+          console.log(this, e, d);
+          return d3.select(this).attr("fill", "red");
+        })
+        .on("mouseout", () => {})
+        .on("click", (e, d) => {
+          console.log(e, d);
+          setPointer(d.date);
+        });
+
+      body
         .selectAll()
-        .append("g")
         .data(data)
         .join("text")
         .text((d: any) => d.stock)
@@ -49,7 +77,7 @@ export default function Stock() {
         .attr("y", (d: any) => y(d.stock)! + 16)
         .attr("text-anchor", "end");
 
-      svg
+      body
         .selectAll()
         .data(data)
         .join("g")
