@@ -1,9 +1,23 @@
 import { useEffect } from "react";
 import * as d3 from "d3";
 
+const desendingSort = (data: any) => {
+  data.sort((a: any, b: any) => {
+    let scoreA = 0,
+      scoreB = 0;
+    for (let i = 0; i < 5; i++) {
+      scoreA += a.data[i].Class * 10 ** (5 - i);
+      scoreB += b.data[i].Class * 10 ** (5 - i);
+    }
+    return scoreB - scoreA;
+  });
+  return data;
+};
+
 export default function Stock() {
   useEffect(() => {
     d3.json("/stock.json").then((data: any) => {
+      data = desendingSort(data);
       const color = d3.scaleOrdinal([0, 1, 2, 3], d3.schemeRdBu[4]);
       const stockList = data.map((x: any) => x.stock);
       const dateList = data[0].data.map((x: any) => x.date);
