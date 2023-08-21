@@ -7,7 +7,7 @@ const desendingSort = (data: any, idx: number) => {
     let scoreA = 0,
       scoreB = 0;
     for (let i = 0; i < compareWidth; i++) {
-      if (idx - i >= 0) {
+      if (idx - i > 0) {
         scoreA += a.data[idx - i].Class * 10 ** (compareWidth - i);
         scoreB += b.data[idx - i].Class * 10 ** (compareWidth - i);
       }
@@ -52,7 +52,7 @@ export default function Stock() {
       let header;
       let body;
       let label;
-      let heapmap;
+      let heatmap;
 
       if (d3.select("#stock-container").select("svg").empty()) {
         svg = d3
@@ -70,7 +70,7 @@ export default function Stock() {
           .attr("id", "svg-body")
           .attr("transform", "translate(0, 20)");
         label = body.append("g").attr("id", "svg-label");
-        heapmap = body
+        heatmap = body
           .append("g")
           .attr("id", "svg-heatmap")
           .attr("transform", "translate(70)");
@@ -79,7 +79,7 @@ export default function Stock() {
         header = d3.select("#svg-header");
         body = d3.select("#svg-body");
         label = d3.select("#svg-label");
-        heapmap = d3.select("#svg-heatmap");
+        heatmap = d3.select("#svg-heatmap");
       }
 
       header
@@ -133,10 +133,11 @@ export default function Stock() {
               .text((d: any) => d.stock)
               .attr("y", (d: any) => {
                 return y(d.stock)! + 16;
-              }),
+              })
+              .selection(),
         );
 
-      heapmap
+      heatmap
         .selectAll()
         .data(data)
         .join(
