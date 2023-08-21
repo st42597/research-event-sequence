@@ -1,14 +1,23 @@
 import { useEffect, useState } from "react";
 import * as d3 from "d3";
 
-const desendingSort = (data: any) => {
+const desendingSort = (data: any, idx: number) => {
+  const compareWidth = 2;
   data.sort((a: any, b: any) => {
     let scoreA = 0,
       scoreB = 0;
-    for (let i = 0; i < 5; i++) {
-      scoreA += a.data[i].Class * 10 ** (5 - i);
-      scoreB += b.data[i].Class * 10 ** (5 - i);
+    for (let i = 0; i < compareWidth; i++) {
+      if (idx - i >= 0) {
+        scoreA += a.data[idx - i].Class * 10 ** (compareWidth - i);
+        scoreB += b.data[idx - i].Class * 10 ** (compareWidth - i);
+      }
+      if (idx + i < data.length) {
+        scoreA += a.data[idx + i].Class * 10 ** (compareWidth - i);
+        scoreB += b.data[idx + i].Class * 10 ** (compareWidth - i);
+      }
     }
+    // console.log(a, b, scoreA, scoreB);
+    // console.log(a.stock, b.stock);
     return scoreB - scoreA;
   });
   return data;
@@ -18,10 +27,14 @@ export default function Stock() {
   const [pointer, setPointer] = useState("2022-08-19");
   useEffect(() => {
     d3.json("/stock.json").then((data: any) => {
-      data = desendingSort(data);
+      const dateList = data[0].data.map((x: any) => x.date);
+      const date2idx = {};
+      dateList.forEach((d: string, i: number) => {
+        date2idx[d] = i;
+      });
+      data = desendingSort(data, date2idx[pointer]);
       const color = d3.scaleOrdinal([0, 1, 2, 3], d3.schemeRdBu[4]);
       const stockList = data.map((x: any) => x.stock);
-      const dateList = data[0].data.map((x: any) => x.date);
       const numberOfStock = stockList.length;
       const numberOfDate = dateList.length;
       const rectSize = 20;
@@ -35,80 +48,133 @@ export default function Stock() {
         .domain(stockList)
         .padding(0.01);
 
-      const svg = d3
-        .select("#stock-container")
-        .append("svg")
-        .attr("width", width)
-        .attr("height", height);
+      let svg;
+      let header;
+      let body;
+      let label;
+      let heapmap;
 
-      const header = svg.append("g").attr("transform", "translate(70, 0)");
-      const body = svg.append("g").attr("transform", "translate(0, 20)");
+      if (d3.select("#stock-container").select("svg").empty()) {
+        svg = d3
+          .select("#stock-container")
+          .append("svg")
+          .attr("id", "svg")
+          .attr("width", x.range()[1] + 70)
+          .attr("height", y.range()[1] + 20);
+        header = svg
+          .append("g")
+          .attr("id", "svg-header")
+          .attr("transform", "translate(70, 0)");
+        body = svg
+          .append("g")
+          .attr("id", "svg-body")
+          .attr("transform", "translate(0, 20)");
+        label = body.append("g").attr("id", "svg-label");
+        heapmap = body
+          .append("g")
+          .attr("id", "svg-heatmap")
+          .attr("transform", "translate(70)");
+      } else {
+        svg = d3.select("#svg");
+        header = d3.select("#svg-header");
+        body = d3.select("#svg-body");
+        label = d3.select("#svg-label");
+        heapmap = d3.select("#svg-heatmap");
+      }
 
       header
         .selectAll("circle")
-        .data(data[0].data)
-        .join("circle")
-        .attr("cx", (d: any) => x(d.date)! + 10)
-        .attr("cy", 10)
-        .attr("r", 5)
-        .attr("fill", (d: any) => {
-          return d.date == pointer ? "red" : "steelblue";
-        })
-        .style("cursor", "pointer");
+        .data(dateList)
+        .join(
+          (enter) =>
+            enter
+              .append("circle")
+              .attr("cx", (d: any) => x(d)! + 10)
+              .attr("cy", 10)
+              .attr("r", 5)
+              .attr("fill", (d: any) => {
+                return d === pointer ? "red" : "steelblue";
+              })
+              .style("cursor", "pointer")
+              .on("mouseover", function () {
+                d3.select(this).attr("fill", "red");
+              })
+              .on("mouseout", function (e: any, d: string) {
+                if (d === pointer) return;
+                d3.select(this).attr("fill", "steelblue");
+              })
+              .on("click", function (e: any, d: string) {
+                setPointer(d);
+              }),
+          (update) =>
+            update
+              .attr("fill", (d: any) => {
+                return d === pointer ? "red" : "steelblue";
+              })
+              .on("mouseout", function (e: any, d: string) {
+                if (d === pointer) return;
+                d3.select(this).attr("fill", "steelblue");
+              }),
+        );
 
-      header
-        .selectAll("circle")
-        .on("mouseover", (e, d) => {
-          console.log(this, e, d);
-          return d3.select(this).attr("fill", "red");
-        })
-        .on("mouseout", () => {})
-        .on("click", (e, d) => {
-          console.log(e, d);
-          setPointer(d.date);
-        });
+      label
+        .selectAll("text")
+        .data(data)
+        .join(
+          (enter) =>
+            enter
+              .append("text")
+              .text((d: any) => d.stock)
+              .attr("x", 60)
+              .attr("y", (d: any) => y(d.stock)! + 16)
+              .attr("text-anchor", "end"),
+          (update) =>
+            update
+              .text((d: any) => d.stock)
+              .attr("y", (d: any) => {
+                return y(d.stock)! + 16;
+              }),
+        );
 
-      body
+      heapmap
         .selectAll()
         .data(data)
-        .join("text")
-        .text((d: any) => d.stock)
-        .attr("x", 60)
-        .attr("y", (d: any) => y(d.stock)! + 16)
-        .attr("text-anchor", "end");
-
-      body
-        .selectAll()
-        .data(data)
-        .join("g")
-        .attr("transform", "translate(70, 0)")
-        .selectAll("g")
-
-        .data((stock: any) => {
-          const stockName = stock.stock;
-          const stockData = stock.data;
-          const ret = [];
-          for (const d in stockData) {
-            ret.push({
-              date: stockData[d].date,
-              name: stockName,
-              class: 3 - stockData[d].Class,
-            });
-          }
-          return ret;
-        })
-        .join("rect")
-        .attr("x", (d: any) => x(d.date)!)
-        .attr("y", (d: any) => y(d.name)!)
-        .attr("height", rectSize)
-        .attr("width", rectSize)
-        .attr("fill", (d) => color(d.class));
+        .join(
+          (enter) =>
+            enter
+              .append("g")
+              .attr("transform", (d: any) => `translate(0, ${y(d.stock)!})`)
+              .selectAll("g")
+              .data((stock: any) => {
+                const stockName = stock.stock;
+                const stockData = stock.data;
+                const ret = [];
+                for (const d in stockData) {
+                  ret.push({
+                    date: stockData[d].date,
+                    name: stockName,
+                    class: 3 - stockData[d].Class,
+                  });
+                }
+                return ret;
+              })
+              .join((enter) =>
+                enter
+                  .append("rect")
+                  .attr("x", (d: any) => x(d.date)!)
+                  .attr("height", rectSize)
+                  .attr("width", rectSize)
+                  .attr("fill", (d: any) => color(d.class)),
+              ),
+          (update) =>
+            update.attr("transform", (d: any) => `translate(${y(d.name)!}, 0)`),
+        );
     });
-  }, []);
+  }, [pointer]);
 
   return (
     <div className="h-full w-full overflow-auto p-8">
-      <h1 className="text-2xl">Stock Event Sequence</h1>
+      <h1 className="mb-4 text-2xl">Stock Event Sequence</h1>
       <div className="overflow-auto">
         <div id="stock-container"></div>
       </div>
