@@ -93,7 +93,7 @@ export default function HeatMap() {
               .attr("cy", 10)
               .attr("r", 5)
               .attr("fill", (d: any) => {
-                return d === pointer ? "red" : "steelblue";
+                return d === pointer ? "red" : "gray";
               })
               .style("cursor", "pointer")
               .on("mouseover", function () {
@@ -101,7 +101,7 @@ export default function HeatMap() {
               })
               .on("mouseout", function (e: any, d: string) {
                 if (d === pointer) return;
-                d3.select(this).attr("fill", "steelblue");
+                d3.select(this).attr("fill", "gray");
               })
               .on("click", function (e: any, d: string) {
                 setPointer(d);
@@ -109,11 +109,11 @@ export default function HeatMap() {
           (update) =>
             update
               .attr("fill", (d: any) => {
-                return d === pointer ? "red" : "steelblue";
+                return d === pointer ? "red" : "gray";
               })
               .on("mouseout", function (e: any, d: string) {
                 if (d === pointer) return;
-                d3.select(this).attr("fill", "steelblue");
+                d3.select(this).attr("fill", "gray");
               }),
         );
 
@@ -175,7 +175,7 @@ export default function HeatMap() {
 
   return (
     <div className="h-full w-full overflow-auto p-8">
-      <h1 className="mb-4 text-2xl">Stock Event Sequence</h1>
+      <h1 className="mb-4 text-2xl">Stock Event Sequence - HeatMap</h1>
       <div className="overflow-auto">
         <div id="stock-container"></div>
       </div>
