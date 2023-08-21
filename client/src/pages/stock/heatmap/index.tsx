@@ -23,7 +23,7 @@ const desendingSort = (data: any, idx: number) => {
   return data;
 };
 
-export default function Stock() {
+export default function HeatMap() {
   const [pointer, setPointer] = useState("2022-08-19");
   useEffect(() => {
     d3.json("/stock.json").then((data: any) => {
