@@ -74,27 +74,23 @@ export default function SentenceVis() {
     });
   }, []);
 
-  useEffect(() => {
-    console.log(label);
-  }, [label]);
+  useEffect(() => {}, [label]);
 
   return (
     <>
       <div ref={canvas}></div>
       <div className="fixed bottom-0 right-0 h-80 w-60 bg-slate-300 p-4">
         <ul>
-          {label.map((x) => {
+          {label.map((x, i) => {
             return (
-              <li className="flex items-center">
+              <li className="flex items-center" key={i}>
                 <div
-                  className={`${
-                    x[1] ? "bg-[" + x[1] + "]" : ""
-                  } inline-block h-4 w-12`}
+                  style={{ backgroundColor: x[1] }}
+                  className="inline-block h-4 w-12"
                 ></div>
                 : {x[0]}
               </li>
             );
-            <li className="bg-[#ff9da7]"></li>;
           })}
         </ul>
       </div>
