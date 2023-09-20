@@ -5,6 +5,8 @@ export default function SentenceVis() {
   const [label, setLabel] = useState([]);
   const [selectedRow, setSelectedRow] = useState(null);
   const [rowOrder, setRowOrder] = useState([...Array(1000).keys()]);
+  const previousValues = useRef({ selectedRow, rowOrder });
+  const firstLoad = useRef(false);
   const canvas = useRef(null);
 
   const color = d3.schemeTableau10;
@@ -15,6 +17,25 @@ export default function SentenceVis() {
     let _label: any = [];
     const row2idx: any = {};
     const loadData = async () => {
+      if (
+        firstLoad.current &&
+        previousValues.current.selectedRow === selectedRow &&
+        previousValues.current.rowOrder === rowOrder
+      )
+        return;
+      if (!firstLoad.current) {
+        firstLoad.current = true;
+        const _rowOrder = localStorage.getItem("row-order");
+        if (_rowOrder !== null) {
+          setRowOrder(JSON.parse(_rowOrder));
+          return;
+        }
+      }
+      if (previousValues.current.rowOrder !== rowOrder) {
+        localStorage.setItem("row-order", JSON.stringify(rowOrder));
+      }
+      previousValues.current = { selectedRow, rowOrder };
+
       let data: any = await d3.json("/iraqwar.json");
       const numCol = Math.max(...data.map((x: Array<any>) => x.length));
       const numRow = data.length;
@@ -52,7 +73,6 @@ export default function SentenceVis() {
         _data[rowOrder[i]] = data[i];
       }
       data = _data;
-      console.log(rowOrder);
 
       const xScale = d3
         .scaleBand()
@@ -109,7 +129,7 @@ export default function SentenceVis() {
         );
       selectG
         .selectAll("rect")
-        .data(data, (d) => d)
+        .data(data)
         .join(
           (enter) =>
             enter
@@ -134,7 +154,7 @@ export default function SentenceVis() {
                 setSelectedRow(row2idx[d]);
               })
               .on("keydown", function (e, d) {
-                const src = row2idx[d];
+                const src = selectedRow;
                 let target: number;
                 if (e.keyCode === 87) {
                   target = Math.max(0, src - 1);
@@ -158,8 +178,11 @@ export default function SentenceVis() {
               }),
           (update) =>
             update
+              .attr(
+                "transform",
+                (d: any, i: number) => `translate(0, ${yScale(i)!})`,
+              )
               .attr("fill", (d: any) => {
-                console.log(row2idx[d], d.length, selectedRow);
                 if (row2idx[d] === selectedRow) return "red";
                 return "transparent";
               })
@@ -171,8 +194,11 @@ export default function SentenceVis() {
                 if (row2idx[d] === selectedRow) return;
                 d3.select(this).attr("fill", "transparent");
               })
+              .on("click", function (_, d) {
+                setSelectedRow(row2idx[d]);
+              })
               .on("keydown", function (e, d) {
-                const src = row2idx[d];
+                const src = selectedRow;
                 let target: number;
                 if (e.keyCode === 87) {
                   target = Math.max(0, src - 1);
