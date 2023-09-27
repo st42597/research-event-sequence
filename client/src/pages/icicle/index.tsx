@@ -4,22 +4,30 @@ import * as d3 from "d3";
 export default function IciclePlot() {
   const width = 800;
   const height = 600;
-  const data = {
-    name: "root",
-    children: [
-      { name: "A", size: 10 },
-      { name: "B", size: 15 },
-      {
-        name: "C",
-        size: 20,
-        children: [
-          { name: "C1", size: 5 },
-          { name: "C2", size: 10 },
-        ],
-      },
-    ],
-  };
   useEffect(() => {
+    const data: { ID: number; time: string } | {} = {};
+    d3.csv("./events.csv").then((d: any) => {
+      if (d.Venue in data) {
+        data[d.Venue].push({
+          ID: d.ID,
+          time: d.time,
+        });
+      } else {
+        data[d.Venue] = [
+          {
+            ID: d.ID,
+            time: d.time,
+          },
+        ];
+      }
+    });
+
+    /*
+    const dataList = [];
+    dataList.sort((a, b) => a.data.length - b.data.length);
+    console.log(dataList);
+    */
+    /*
     const svg = d3
       .select("#icicle-plot")
       .append("svg")
@@ -28,7 +36,7 @@ export default function IciclePlot() {
 
     const partition = d3.partition().size([width, height]).padding(1);
 
-    const root = d3.hierarchy(data).sum((d) => d.size);
+    const root: any = d3.hierarchy(data).sum((d: any) => d.size);
 
     partition(root);
 
@@ -54,6 +62,7 @@ export default function IciclePlot() {
     function handleMouseOut(d) {
       // Handle mouseout event
     }
+    */
   }, []);
   return <div id="icicle-plot"></div>;
 }

@@ -4,7 +4,7 @@ import * as d3 from "d3";
 export default function SentenceVis() {
   const [label, setLabel] = useState([]);
   const [selectedRow, setSelectedRow] = useState(null);
-  const [rowOrder, setRowOrder] = useState([...Array(1000).keys()]);
+  const [rowOrder, setRowOrder] = useState([...Array(50000).keys()]);
   const previousValues = useRef({ selectedRow, rowOrder });
   const firstLoad = useRef(false);
   const canvas = useRef(null);
@@ -25,27 +25,40 @@ export default function SentenceVis() {
         return;
       if (!firstLoad.current) {
         firstLoad.current = true;
-        const _rowOrder = localStorage.getItem("tmp1");
+        // tmp1
+        // order1
+        const _rowOrder = localStorage.getItem("tmp4");
         if (_rowOrder !== null) {
           setRowOrder(JSON.parse(_rowOrder));
           return;
         }
       }
+      for (let i = 0; i < window.localStorage.length; i++) {
+        console.log(window.localStorage.key(i));
+      }
       if (previousValues.current.rowOrder !== rowOrder) {
-        localStorage.setItem("tmp1", JSON.stringify(rowOrder));
+        localStorage.setItem("tmp4", JSON.stringify(rowOrder));
       }
       previousValues.current = { selectedRow, rowOrder };
-
-      let data: any = await d3.json("/iraqwar.json");
+      // iraqwar
+      // demian
+      let data: any = await d3.json("/wine.json");
       const numCol = Math.max(...data.map((x: Array<any>) => x.length));
       const numRow = data.length;
       const rectWidth = 100;
-      const rectHeight = 4;
-      const width = 2000;
+      const rectHeight = 2;
+      const width = 1400;
       const height = rectHeight * numRow;
 
       for (let i = 0; i < data.length; i++) {
-        for (let j = 0; j < data[i].length; j++) {
+        for (let j = data[i].length - 1; j >= 0; j--) {
+          if (
+            j + 1 < data[i].length &&
+            data[i][j][1][0] === "#" &&
+            data[i][j + 1][1][0] !== "#"
+          ) {
+            data[i][j + 1][1] = data[i][j][1];
+          }
           if (data[i][j][1][0] !== "#") {
             event2color[data[i][j][1]] = "lightgray";
           }
@@ -56,16 +69,31 @@ export default function SentenceVis() {
           }
         }
       }
-      /*
+
       function countKeyword(a: any) {
         return a.filter((d: any) => d[1][0] === "#").length;
       }
-
+      /*
       data.sort((a: any, b: any) => {
         return countKeyword(b) - countKeyword(a);
       });
       */
-
+      function posKeyword(a: any) {
+        for (let i = 0; i < a.length; i++) {
+          if (a[i][1] === "#A") return i;
+        }
+        return 1000000000;
+      }
+      data.sort((a: any, b: any) => {
+        return posKeyword(a) - posKeyword(b);
+      });
+      /*
+      data.sort((a: any, b: any) => {
+        const cntA = countKeyword(a);
+        const cntB = countKeyword(b);
+        if (cntA == 0 && cntB == 0) return;
+      });
+      */
       for (let i = 0; i < data.length; i++) {
         row2idx[data[i]] = rowOrder[i];
       }
