@@ -4,7 +4,7 @@ import * as d3 from "d3";
 export default function SentenceVis() {
   const [label, setLabel] = useState([]);
   const [selectedRow, setSelectedRow] = useState(null);
-  const [rowOrder, setRowOrder] = useState([...Array(50000).keys()]);
+  const [rowOrder, setRowOrder] = useState([...Array(20000).keys()]);
   const previousValues = useRef({ selectedRow, rowOrder });
   const firstLoad = useRef(false);
   const canvas = useRef(null);
@@ -27,26 +27,28 @@ export default function SentenceVis() {
         firstLoad.current = true;
         // tmp1
         // order1
-        const _rowOrder = localStorage.getItem("tmp4");
+        const _rowOrder = localStorage.getItem("aba");
         if (_rowOrder !== null) {
           setRowOrder(JSON.parse(_rowOrder));
           return;
         }
       }
       for (let i = 0; i < window.localStorage.length; i++) {
-        console.log(window.localStorage.key(i));
+        // console.log(window.localStorage.key(i));
       }
       if (previousValues.current.rowOrder !== rowOrder) {
-        localStorage.setItem("tmp4", JSON.stringify(rowOrder));
+        localStorage.setItem("aba", JSON.stringify(rowOrder));
       }
       previousValues.current = { selectedRow, rowOrder };
       // iraqwar
       // demian
       let data: any = await d3.json("/wine.json");
-      const numCol = Math.max(...data.map((x: Array<any>) => x.length));
+
+      // const numCol = Math.max(...data.map((x: Array<any>) => x.length));
+      const numCol = 50;
       const numRow = data.length;
       const rectWidth = 100;
-      const rectHeight = 2;
+      const rectHeight = 1;
       const width = 1400;
       const height = rectHeight * numRow;
 
@@ -64,6 +66,7 @@ export default function SentenceVis() {
           }
           if (!(data[i][j][1] in event2color)) {
             event2color[data[i][j][1]] = color[cnt];
+            console.log(data[i][j][0], color[cnt]);
             _label.push([data[i][j][0], color[cnt]]);
             cnt++;
           }
@@ -79,13 +82,23 @@ export default function SentenceVis() {
       });
       */
       function posKeyword(a: any) {
+        let sum = 0;
         for (let i = 0; i < a.length; i++) {
-          if (a[i][1] === "#A") return i;
+          if (a[i][1] === "#A") {
+            sum += 10000 * (50 - i);
+            break;
+          }
         }
-        return 1000000000;
+        for (let i = 0; i < a.length; i++) {
+          if (a[i][1] === "#P") {
+            sum += 50 - i;
+            break;
+          }
+        }
+        return sum;
       }
       data.sort((a: any, b: any) => {
-        return posKeyword(a) - posKeyword(b);
+        return posKeyword(b) - posKeyword(a);
       });
       /*
       data.sort((a: any, b: any) => {
@@ -156,6 +169,7 @@ export default function SentenceVis() {
             .attr("x", (d: any, i: number) => xScale(i))
             .attr("fill", (d: any, i: number) => event2color[d[1]]),
         );
+
       selectG
         .selectAll("rect")
         .data(data)
