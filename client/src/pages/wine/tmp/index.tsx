@@ -9,7 +9,7 @@ export default function SentenceVis() {
   useEffect(() => {
     let _label: any = [];
     const loadData = async () => {
-      const json: any = await d3.json("/wine.json");
+      const json: any = await d3.json("/wine8.json");
 
       _label = json[0];
       const data = json[1];
