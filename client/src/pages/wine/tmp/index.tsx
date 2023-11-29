@@ -41,6 +41,8 @@ export default function SentenceVis() {
       const xScale = d3.scaleBand().range([0, width]).domain([...Array(numCol).keys()]);
       const yScale = d3.scaleBand().range([0, height]).domain([...Array(numRow).keys()]);
 
+      if(svg !== undefined) svg.remove();
+
       _svg
         .selectAll()
         .data(data)
