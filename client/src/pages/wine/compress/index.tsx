@@ -38,10 +38,16 @@ export default function SentenceVis() {
         .attr("width", width)
         .attr("height", height);
 
-      const xScale = d3.scaleBand().range([0, width]).domain([...Array(numCol).keys()]);
-      const yScale = d3.scaleBand().range([0, height]).domain([...Array(numRow).keys()]);
+      const xScale = d3
+        .scaleBand()
+        .range([0, width])
+        .domain([...Array(numCol).keys()]);
+      const yScale = d3
+        .scaleBand()
+        .range([0, height])
+        .domain([...Array(numRow).keys()]);
 
-      if(svg !== undefined) svg.remove();
+      if (svg !== undefined) svg.remove();
 
       _svg
         .selectAll()
@@ -91,8 +97,14 @@ export default function SentenceVis() {
     const width = 1920;
     const height = rectHeight * numRow;
 
-    const xScale = d3.scaleBand().range([0, width]).domain([...Array(numCol).keys()]);
-    const yScale = d3.scaleBand().range([0, height]).domain([...Array(numRow).keys()]);
+    const xScale = d3
+      .scaleBand()
+      .range([0, width])
+      .domain([...Array(numCol).keys()]);
+    const yScale = d3
+      .scaleBand()
+      .range([0, height])
+      .domain([...Array(numRow).keys()]);
 
     svg.selectAll("*").remove();
 
@@ -133,7 +145,10 @@ export default function SentenceVis() {
         <ul>
           {label.map((x, i) => (
             <li className="flex items-center" key={i}>
-              <div style={{ backgroundColor: x[1] }} className="inline-block h-4 w-12"></div>
+              <div
+                style={{ backgroundColor: x[1] }}
+                className="inline-block h-4 w-12"
+              ></div>
               : {x[0]}
             </li>
           ))}

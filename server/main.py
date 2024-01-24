@@ -6,11 +6,6 @@ app = FastAPI()
 @app.get("/wine/")
 async def read_wine(col: int = -1):
 
-    def remove_clutter():
-        1
-
-
-
     file_path = "./wine.json"
     with open(file_path, 'r') as file:
         data = json.load(file)
@@ -28,3 +23,10 @@ async def read_wine(col: int = -1):
     sorted_data = [data[0], sorted_color]
 
     return sorted_data
+
+@app.get("/wine/meta/")
+async def read_wine_meta():
+    file_path = "./wine_meta.json"
+    with open(file_path, 'r') as file:
+        data = json.load(file)
+    return data
