@@ -30,3 +30,10 @@ async def read_wine_meta():
     with open(file_path, 'r') as file:
         data = json.load(file)
     return data
+
+@app.get("/sequlet/")
+async def read_wine_meta():
+    file_path = "./sequlet_df.json"
+    with open(file_path, 'r') as file:
+        data = json.load(file)
+    return data
